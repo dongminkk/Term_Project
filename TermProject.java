@@ -5,8 +5,7 @@ public class TermProject {
 	public static void main(String[] args) {
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			Connection con = DriverManager.getConnection("jdbc:mysql://192.168.82.3:4567/access_control", "username",
-					"password");
+			Connection con = DriverManager.getConnection("jdbc:mysql://192.168.82.3:4567/termdb", "root", "1234");
 			Scanner scanner = new Scanner(System.in);
 
 			while (true) {
@@ -46,30 +45,34 @@ public class TermProject {
 
 			ResultSet rs = pstmt.executeQuery();
 			if (rs.next()) {
-				System.out.println("사원 로그인 성공");
-				while (true) {
-					System.out.println("\n1. 출입");
-					System.out.println("2. 나의 출입기록 조회");
-					System.out.println("3. 로그아웃");
-					System.out.print("메뉴를 선택하세요: ");
+		        System.out.println("사원 로그인 성공");
+		        while (true) {
+		            System.out.println("\n1. 들어감");
+		            System.out.println("2. 나옴");
+		            System.out.println("3. 나의 출입 기록 조회");
+		            System.out.println("4. 로그아웃");
+		            System.out.print("메뉴를 선택하세요: ");
 
-					int choice = scanner.nextInt();
-					scanner.nextLine(); // Consume newline
+		            int choice = scanner.nextInt();
+		            scanner.nextLine(); // Consume newline
 
-					if (choice == 1) {
-						recordAccess(con, employeeName);
-					} else if (choice == 2) {
-						showEmployeeAccessLogs(con, employeeName);
-					} else if (choice == 3) {
-						System.out.println("로그아웃합니다.");
-						break;
-					} else {
-						System.out.println("올바른 메뉴를 선택하세요.");
-					}
-				}
-			} else {
-				System.out.println("사원 이름이 올바르지 않습니다.");
-			}
+		            if (choice == 1) {
+		                recordAccess(con, employeeName, "입"); // '들어감' 선택 시 출입 기록 추가
+		            } else if (choice == 2) {
+		                // 나옴 기능 구현
+		            } else if (choice == 3) {
+		                showEmployeeAccessLogs(con, employeeName);
+		            } else if (choice == 4) {
+		                System.out.println("로그아웃합니다.");
+		                break;
+		            } else {
+		                System.out.println("올바른 메뉴를 선택하세요.");
+		            }
+		        }
+		    } else {
+		        System.out.println("사원 이름이 올바르지 않습니다.");
+		    }
+		
 		} catch (SQLException e) {
 			System.out.println(e);
 		}
@@ -253,6 +256,22 @@ public class TermProject {
 		} catch (SQLException e) {
 			System.out.println(e);
 		}
+	}
+	public static void recordAccess(Connection con, String employeeName, String inOut) {
+	    try {
+	        PreparedStatement pstmt = con.prepareStatement("INSERT INTO AccessLog (username, access_time, in_out) VALUES (?, NOW(), ?)");
+	        pstmt.setString(1, employeeName);
+	        pstmt.setString(2, inOut);
+
+	        int rowsAffected = pstmt.executeUpdate();
+	        if (rowsAffected > 0) {
+	            System.out.println("출입 기록이 성공적으로 저장되었습니다.");
+	        } else {
+	            System.out.println("출입 기록 저장 실패");
+	        }
+	    } catch (SQLException e) {
+	        System.out.println(e);
+	    }
 	}
 
 }
